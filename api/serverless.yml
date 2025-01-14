@@ -1,0 +1,29 @@
+org: otani-bouquet-management
+app: bouquet-management-website
+services: bouquet-maagement-api
+providers:
+  name: aws
+  stage: ${opt:stage, 'dev'}
+  region: ap-northeast-1
+  versionFunction: false
+functions:
+  bouquetApi:
+    handler: main.handler
+    name: ${sls:stage}-lambda
+    runtime: python3.11
+    package:
+      patterns:
+        - '!./**'
+        - models/**
+        - routers/**
+        - schemas/**
+        - langs/**
+        - tasks/**
+        - utils/**
+        - main.py
+        - config.py
+        - task_handler.py
+    events:
+      - httpApi:
+          method: '*'
+          path: /

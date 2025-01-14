@@ -1,0 +1,56 @@
+services:
+  web:
+    build: docker/web
+    working_dir: /src/web
+    # user: "1000"
+    user: "${COMPOSE_UID:-1000}:${COMPOSE_GID:-1000}"
+    volumes:
+      - ./web:/src/web
+    ports:
+      - "3000:3000"
+    expose:
+      - 3000
+    command: ["npm", "run", "dev","--","--port","3000"]
+
+  api:
+    build: docker/api
+    volumes:
+      - ./api:/var/task
+    working_dir: /var/task
+    ports:
+      - "8000:8000"
+    user: "${COMPOSE_UID:-1000}:${COMPOSE_GID:-1000}"
+    environment:
+      - HOME=/tmp
+    entrypoint: ['poetry', 'run']
+    command: ["uvicorn", "main:router", "--reload", "--host=0.0.0.0" ]
+
+  db:
+    container_name: mini-project-db1
+    image: postgres:14-alpine
+    # the folder in container "/var/lib/postgresql/data" has been mapping to ./db-data at the host machine
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+    ports:
+      - "4000:5432"
+    #automatic create the user and db following
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=default
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5000:80"
+    depends_on:
+      - db
+    logging:
+      driver: none
+
+volumes:
+  db-data:
+    driver: local

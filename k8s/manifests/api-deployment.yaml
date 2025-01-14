@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: miniproject-api
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: api-volume
+          mountPath: /var/task
+        command: ["poetry", "run", "uvicorn", "main:router", "--reload", "--host=0.0.0.0"]
+        env:
+        - name: HOME
+          value: "/tmp"
+     
